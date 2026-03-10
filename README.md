@@ -1,10 +1,28 @@
-# *arr Stack Deployment Tool – Projektkontext
+# *arr Stack Deployment Tool
 
-## Was ist das?
-Ein React-basiertes Deployment-Tool für *arr-Apps (Sonarr, Radarr, Prowlarr etc.)
-auf Proxmox VE als native LXC-Container.
+Deployment-Tool für Arr-Stack 
+(Sonarr, Radarr, Prowlarr etc.)
+als native LXC-Container.
 
-## Aktueller Stand
+## Tech-Stack
+- Frontend: React + Vite
+- WebSocket: wss:// auf Host
+- LXC: native binaries & systemd
+- Styling:
+
+## Projektstruktur
+```
+proxmoxarr/
+├── src/
+│   ├── App.jsx        ← Artifact
+│   └── main.jsx
+├── ws/
+│   └── arr-ws-bridge.js ← SSH over Websocket / docs nötig  
+├── index.html         
+├── vite.config.js     
+├── package.json
+├── package-lock.json
+└── README.md          ←
 
 ## Infrastruktur
 
@@ -14,22 +32,9 @@ auf Proxmox VE als native LXC-Container.
 
 
 ## Technologie-Stack
-- Frontend: React + Vite
-- Styling: Inline Styles
-- State: useState/useReducer
-- WebSocket: wss:// auf Proxmox
-- LXC: native Binaries + systemd
 
-## Projektstruktur
-```
-arr-tool/
-├── src/
-│   ├── App.jsx        ← Haupt-Komponente (siehe App.jsx Artifact)
-│   └── main.jsx       ← Standard Vite React Entry
-├── index.html         ← Standard Vite
-├── vite.config.js     ← Standard Vite React
-├── package.json
-└── PROMPT.md          ← Diese Datei
+
+
 ```
 
 ## Setup-Befehle
