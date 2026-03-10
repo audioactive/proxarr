@@ -1,16 +1,80 @@
-# React + Vite
+# *arr Stack Deployment Tool – Projektkontext
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Was ist das?
+Ein React-basiertes Deployment-Tool für *arr-Apps (Sonarr, Radarr, Prowlarr etc.)
+auf Proxmox VE als native LXC-Container (kein Docker).
 
-Currently, two official plugins are available:
+## Aktueller Stand
+- Tool läuft aktuell als Claude.ai Artifact (React)
+- Ziel: Lokal in VSCode/Vite hosten damit WebSocket-Verbindungen funktionieren
+- WebSocket-Bridge (`arr-ws-bridge.js`) läuft bereits auf Proxmox-Host
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Infrastruktur
+- Proxmox-Host: `netcup.acidhosting.de` (152.53.108.232)
+- SSH-User: `root`
+- SSH-Port: `22`
+- WS-Bridge Port: `2222` (wss://, Let's Encrypt Zertifikat vorhanden)
+- WS-Bridge Pfad: `/opt/arr-bridge/arr-ws-bridge.js`
+- WS-Bridge systemd-Dienst: `arr-bridge.service` (active/running)
+- Let's Encrypt Zertifikat: `/etc/letsencrypt/live/netcup.acidhosting.de/`
 
-## React Compiler
+## Proxmox Konfiguration
+- Node: `pve`
+- Bridge: `vmbr0`
+- Storage: `local-lvm`
+- OS-Template: `debian-12-standard_12.7-1_amd64.tar.zst`
+- Default Gateway: `192.168.1.1`
+- Nameserver: `1.1.1.1`
+- Unprivileged Container: ja
+- Start on Boot: ja
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Volume Pfade
+- Config: `/opt/arr/config`
+- Media: `/mnt/media`
+- Downloads: `/mnt/downloads`
+- PUID/PGID: `1000/1000`
+- Timezone: `Europe/Berlin`
 
-## Expanding the ESLint configuration
+## Services (aktiv)
+| Service      | VMID | Port  | RAM   | Cores | Disk |
+|--------------|------|-------|-------|-------|------|
+| Sonarr       | 200  | 8989  | 512MB | 1     | 4GB  |
+| Radarr       | 201  | 7878  | 512MB | 1     | 4GB  |
+| Prowlarr     | 202  | 9696  | 256MB | 1     | 2GB  |
+| qBittorrent  | 206  | 8080  | 1GB   | 2     | 8GB  |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Technologie-Stack
+- Frontend: React + Vite
+- Styling: Inline Styles (kein CSS-Framework)
+- State: useState/useReducer
+- Persistenz: window.storage (Claude) → auf localStorage umstellen lokal
+- WebSocket: wss:// zu arr-ws-bridge.js auf Proxmox
+- LXC: native Binaries + systemd (kein Docker)
+
+## Aufgaben für Claude Code
+1. `src/App.jsx` mit dem Code aus `App.jsx` befüllen
+2. `window.storage` auf `localStorage` umstellen
+3. WebSocket-URL auf `wss://netcup.acidhosting.de:2222` hardcoden oder per `.env`
+4. `npm run dev` starten und testen
+5. Optional: `npm run build` + Nginx-Deployment
+
+## Projektstruktur
+```
+arr-tool/
+├── src/
+│   ├── App.jsx        ← Haupt-Komponente (siehe App.jsx Artifact)
+│   └── main.jsx       ← Standard Vite React Entry
+├── index.html         ← Standard Vite
+├── vite.config.js     ← Standard Vite React
+├── package.json
+└── PROMPT.md          ← Diese Datei
+```
+
+## Setup-Befehle
+```bash
+npm create vite@latest arr-tool -- --template react
+cd arr-tool
+npm install
+# App.jsx einfügen
+npm run dev
+```
