@@ -1,0 +1,95 @@
+name: Deploy *arr Service
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to deploy (or "all" for all enabled)'
+        required: true
+        type: choice
+        options:
+          - all
+          - sonarr
+          - radarr
+          - prowlarr
+          - lidarr
+          - readarr
+          - bazarr
+          - qbittorrent
+          - overseerr
+          - jellyfin
+          - plex
+          - tautulli
+          - flaresolverr
+          - sabnzbd
+          - mylar3
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - deploy
+          - destroy
+  push:
+    paths:
+      - 'config/services.json'
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy scripts and config to Proxmox host
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.PVE_HOST }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "scripts/,config/"
+          target: "/tmp/proxmoxarr-deploy"
+
+      - name: Execute deployment on Proxmox host
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PVE_HOST }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /tmp/proxmoxarr-deploy
+            chmod +x scripts/*.sh
+
+            # Determine action and service from inputs or push event
+            ACTION="${{ github.event.inputs.action || 'deploy' }}"
+            SERVICE="${{ github.event.inputs.service || 'all' }}"
+
+            if [[ "$ACTION" == "destroy" ]]; then
+              if [[ "$SERVICE" == "all" ]]; then
+                echo "ERROR: Cannot destroy all services at once. Please select a specific service." >&2
+                exit 1
+              fi
+              echo "Destroying service: $SERVICE"
+              ./scripts/destroy-service.sh "$SERVICE" config/services.json
+            elif [[ "$SERVICE" == "all" ]]; then
+              echo "Deploying all enabled services..."
+              ./scripts/deploy-all.sh config/services.json
+            else
+              echo "Deploying service: $SERVICE"
+              ./scripts/deploy-service.sh "$SERVICE" config/services.json
+            fi
+
+      - name: Cleanup temporary files on Proxmox host
+        if: always()
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PVE_HOST }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            rm -rf /tmp/proxmoxarr-deploy

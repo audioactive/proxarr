@@ -350,6 +350,37 @@ export default function App() {
   };
   useState(()=>{ handleLoad(); });
 
+  const handleExportConfig = () => {
+    const configData = {
+      pve,
+      volumes,
+      services: services.map(svc => ({
+        id: svc.id,
+        name: svc.name,
+        enabled: svc.enabled,
+        port: svc.port,
+        vmid: svc.vmid,
+        cores: svc.cores,
+        mem: svc.mem,
+        disk: svc.disk,
+        ip: svc.ip || "",
+        gw: svc.gw || "",
+        mediaPath: svc.mediaPath || "",
+        ...(["qbittorrent","sabnzbd"].includes(svc.id) ? { downloadPath: volumes.baseDownloadPath } : {}),
+        startOnBoot: svc.startOnBoot ?? true,
+      })),
+    };
+    const blob = new Blob([JSON.stringify(configData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "services.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const deployService = (svc) => {
     setDeploying(p=>({...p,[svc.id]:"running"}));
     setTab("config");
@@ -396,6 +427,9 @@ export default function App() {
           <span style={{fontSize:13,color:"#64748b"}}>{enabled.length}/{services.length} aktiv</span>
           <button onClick={handleSave} style={{background:saveState==="saved"?"#22c55e22":saveState==="error"?"#ef444422":"#3b82f622",border:`1px solid ${saveState==="saved"?"#22c55e":saveState==="error"?"#ef4444":"#3b82f6"}`,color:saveState==="saved"?"#22c55e":saveState==="error"?"#ef4444":"#60a5fa",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:13,fontWeight:600,transition:"all .2s"}}>
             {saveState==="saved"?"✓ Gespeichert!":saveState==="error"?"✗ Fehler":"💾 Speichern"}
+          </button>
+          <button onClick={handleExportConfig} style={{background:"#f59e0b22",border:"1px solid #f59e0b44",color:"#f59e0b",borderRadius:8,padding:"6px 16px",cursor:"pointer",fontSize:13,fontWeight:600,transition:"all .2s"}}>
+            📤 Export Config
           </button>
         </div>
       </div>
