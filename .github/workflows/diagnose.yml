@@ -5,7 +5,7 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Check Proxmox storage and templates
+      - name: Check network inside CT 200
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.PVE_HOST }}
@@ -14,14 +14,23 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 22
           script: |
-            echo "=== STORAGE STATUS ==="
-            pvesm status
+            echo "=== HOST NETWORKING ==="
+            ip route show default
+            cat /etc/resolv.conf
             echo ""
-            echo "=== AVAILABLE TEMPLATES ==="
-            ls -la /var/lib/vz/template/cache/ 2>/dev/null || echo "No templates in /var/lib/vz/template/cache/"
+            echo "=== CT 200 STATUS ==="
+            pct status 200 2>/dev/null || echo "CT 200 does not exist"
             echo ""
-            echo "=== PVEAM LIST ==="
-            pveam list local 2>/dev/null || echo "pveam list local failed"
+            echo "=== CT 200 CONFIG ==="
+            pct config 200 2>/dev/null || echo "Cannot read CT 200 config"
             echo ""
-            echo "=== EXISTING CTs ==="
-            pct list 2>/dev/null || echo "pct list failed"
+            echo "=== CT 200 NETWORK ==="
+            pct exec 200 -- ip addr show 2>/dev/null || echo "Cannot exec in CT 200"
+            echo ""
+            pct exec 200 -- ip route show 2>/dev/null || echo "No routes"
+            echo ""
+            pct exec 200 -- cat /etc/resolv.conf 2>/dev/null || echo "No resolv.conf"
+            echo ""
+            echo "=== CT 200 DNS TEST ==="
+            pct exec 200 -- ping -c 1 -W 3 1.1.1.1 2>/dev/null || echo "Cannot ping 1.1.1.1"
+            pct exec 200 -- ping -c 1 -W 3 deb.debian.org 2>/dev/null || echo "Cannot resolve deb.debian.org"
