@@ -30,11 +30,6 @@ on:
         options:
           - deploy
           - destroy
-  push:
-    paths:
-      - 'config/services.json'
-    branches:
-      - master
 
 jobs:
   deploy:
