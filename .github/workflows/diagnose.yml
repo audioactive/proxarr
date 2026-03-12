@@ -1,0 +1,27 @@
+name: Diagnose Proxmox
+on:
+  workflow_dispatch:
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Proxmox storage and templates
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PVE_HOST }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: 22
+          script: |
+            echo "=== STORAGE STATUS ==="
+            pvesm status
+            echo ""
+            echo "=== AVAILABLE TEMPLATES ==="
+            ls -la /var/lib/vz/template/cache/ 2>/dev/null || echo "No templates in /var/lib/vz/template/cache/"
+            echo ""
+            echo "=== PVEAM LIST ==="
+            pveam list local 2>/dev/null || echo "pveam list local failed"
+            echo ""
+            echo "=== EXISTING CTs ==="
+            pct list 2>/dev/null || echo "pct list failed"
