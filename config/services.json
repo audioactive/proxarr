@@ -1,8 +1,8 @@
 {
   "pve": {
-    "node": "pve",
+    "node": "netcup",
     "bridge": "vmbr0",
-    "storage": "local-lvm",
+    "storage": "local",
     "osTemplate": "local:vztmpl/debian-12-standard_12.7-1_amd64.tar.zst",
     "defaultGw": "192.168.1.1",
     "subnetCidr": "24",
