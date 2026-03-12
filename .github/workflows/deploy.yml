@@ -31,6 +31,12 @@ on:
           - deploy
           - destroy
 
+  push:
+    paths:
+      - 'config/services.json'
+    branches:
+      - master
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
