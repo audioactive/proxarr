@@ -168,6 +168,16 @@ fi
 
 echo "# ── Deploying LXC for ${SVC_NAME} (VMID ${SVC_VMID}) ──"
 
+# Step 0: If container already exists, stop and destroy it (redeploy)
+if pct status "${SVC_VMID}" &>/dev/null; then
+  echo "⚠️  CT ${SVC_VMID} already exists — destroying for redeploy..."
+  pct stop "${SVC_VMID}" 2>/dev/null || true
+  sleep 2
+  pct destroy "${SVC_VMID}" --purge 2>/dev/null || true
+  sleep 2
+  echo "   CT ${SVC_VMID} destroyed."
+fi
+
 # Step 1: Create config directory on host
 mkdir -p "${BASE_CONFIG_PATH}/${SERVICE_ID}"
 chown 100000:100000 "${BASE_CONFIG_PATH}/${SERVICE_ID}"
