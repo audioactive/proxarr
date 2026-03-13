@@ -1,20 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const DEFAULT_SERVICES = [
-  { id: "sonarr",       name: "Sonarr",       icon: "📺", port: 8989,  enabled: true,  configPath: "/config/sonarr",      mediaPath: "/media/tv",     apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2000, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "" },
-  { id: "radarr",       name: "Radarr",       icon: "🎬", port: 7878,  enabled: true,  configPath: "/config/radarr",      mediaPath: "/media/movies", apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2001, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "" },
-  { id: "prowlarr",     name: "Prowlarr",     icon: "🔍", port: 9696,  enabled: true,  configPath: "/config/prowlarr",    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2002, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "" },
-  { id: "lidarr",       name: "Lidarr",       icon: "🎵", port: 8686,  enabled: false, configPath: "/config/lidarr",      mediaPath: "/media/music",  apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2003, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "" },
-  { id: "jackett",      name: "Jackett",      icon: "🧥", port: 9117,  enabled: false, configPath: "/config/jackett",     mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2004, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "" },
-  { id: "bazarr",       name: "Bazarr",       icon: "💬", port: 6767,  enabled: false, configPath: "/config/bazarr",      mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2005, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "" },
-  { id: "qbittorrent",  name: "qBittorrent",  icon: "⬇️", port: 8080,  enabled: true,  configPath: "/config/qbittorrent", mediaPath: "/downloads",    apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2006, cores: 2, mem: 1024, disk: 8,  ip: "", gw: "" },
-  { id: "overseerr",    name: "Overseerr",    icon: "🎟️", port: 5055,  enabled: false, configPath: "/config/overseerr",   mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2007, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "" },
-  { id: "jellyfin",     name: "Jellyfin",     icon: "🍇", port: 8096,  enabled: false, configPath: "/config/jellyfin",    mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2008, cores: 2, mem: 2048, disk: 8,  ip: "", gw: "" },
-  { id: "plex",         name: "Plex",         icon: "🟡", port: 32400, enabled: false, configPath: "/config/plex",        mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2009, cores: 2, mem: 2048, disk: 8,  ip: "", gw: "" },
-  { id: "tautulli",     name: "Tautulli",     icon: "📊", port: 8181,  enabled: false, configPath: "/config/tautulli",    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2010, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "" },
-  { id: "flaresolverr", name: "FlareSolverr", icon: "🔓", port: 8191,  enabled: false, configPath: "",                    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2011, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "" },
-  { id: "sabnzbd",      name: "SABnzbd",      icon: "📡", port: 8090,  enabled: false, configPath: "/config/sabnzbd",     mediaPath: "/downloads",    apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2012, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "" },
-  { id: "mylar3",       name: "Mylar3",       icon: "📰", port: 8090,  enabled: false, configPath: "/config/mylar3",      mediaPath: "/media/comics", apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2013, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "" },
+  { id: "sonarr",       name: "Sonarr",       icon: "📺", port: 8989,  enabled: true,  configPath: "/config/sonarr",      mediaPath: "/media/tv",     apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2000, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/sonarr:latest" },
+  { id: "radarr",       name: "Radarr",       icon: "🎬", port: 7878,  enabled: true,  configPath: "/config/radarr",      mediaPath: "/media/movies", apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2001, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/radarr:latest" },
+  { id: "prowlarr",     name: "Prowlarr",     icon: "🔍", port: 9696,  enabled: true,  configPath: "/config/prowlarr",    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2002, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/prowlarr:latest" },
+  { id: "lidarr",       name: "Lidarr",       icon: "🎵", port: 8686,  enabled: false, configPath: "/config/lidarr",      mediaPath: "/media/music",  apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2003, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/lidarr:latest" },
+  { id: "jackett",      name: "Jackett",      icon: "🧥", port: 9117,  enabled: false, configPath: "/config/jackett",     mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2004, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/jackett:latest" },
+  { id: "bazarr",       name: "Bazarr",       icon: "💬", port: 6767,  enabled: false, configPath: "/config/bazarr",      mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2005, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/bazarr:latest" },
+  { id: "qbittorrent",  name: "qBittorrent",  icon: "⬇️", port: 8080,  enabled: true,  configPath: "/config/qbittorrent", mediaPath: "/downloads",    apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2006, cores: 2, mem: 1024, disk: 8,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/qbittorrent:latest" },
+  { id: "overseerr",    name: "Overseerr",    icon: "🎟️", port: 5055,  enabled: false, configPath: "/config/overseerr",   mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2007, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/overseerr:latest" },
+  { id: "jellyfin",     name: "Jellyfin",     icon: "🍇", port: 8096,  enabled: false, configPath: "/config/jellyfin",    mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2008, cores: 2, mem: 2048, disk: 8,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/jellyfin:latest" },
+  { id: "plex",         name: "Plex",         icon: "🟡", port: 32400, enabled: false, configPath: "/config/plex",        mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2009, cores: 2, mem: 2048, disk: 8,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/plex:latest" },
+  { id: "tautulli",     name: "Tautulli",     icon: "📊", port: 8181,  enabled: false, configPath: "/config/tautulli",    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2010, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/tautulli:latest" },
+  { id: "flaresolverr", name: "FlareSolverr", icon: "🔓", port: 8191,  enabled: false, configPath: "",                    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2011, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/flaresolverr/flaresolverr:latest" },
+  { id: "sabnzbd",      name: "SABnzbd",      icon: "📡", port: 8090,  enabled: false, configPath: "/config/sabnzbd",     mediaPath: "/downloads",    apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2012, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/sabnzbd:latest" },
+  { id: "mylar3",       name: "Mylar3",       icon: "📰", port: 8090,  enabled: false, configPath: "/config/mylar3",      mediaPath: "/media/comics", apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2013, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/mylar3:latest" },
 ];
 
 const RESTART_POLICIES = ["no","always","on-failure","unless-stopped"];
@@ -140,7 +140,60 @@ const API_KEY_CMD = {
   sabnzbd:  v=>`pct exec ${v} -- bash -c 'grep -oP "(?<=api_key = )\\S+" /config/sabnzbd.ini 2>/dev/null'`,
 };
 
-// ── pct create ───────────────────────────────────────────────────────────────
+// ── OCI pct create ───────────────────────────────────────────────────────────
+function pctCreateOCI(svc, pve, volumes) {
+  const ip    = svc.ip ? `${svc.ip}/${pve.subnetCidr},gw=${svc.gw||pve.defaultGw}` : "dhcp";
+  const hasDl = ["qbittorrent","sabnzbd","nzbget"].includes(svc.id);
+  const envVars = [
+    `PUID=1000`,
+    `PGID=1000`,
+    `TZ=${volumes.tz}`,
+    svc.apiKey ? `API_KEY=${svc.apiKey}` : "",
+  ].filter(Boolean);
+  return [
+    `pct create ${svc.vmid} ${svc.ociImage}`,
+    `  --arch amd64`,
+    `  --ostype unmanaged`,
+    `  --hostname ${svc.id}`,
+    `  --cores ${svc.cores}`,
+    `  --memory ${svc.mem}`,
+    `  --swap 128`,
+    `  --storage ${pve.storage}`,
+    `  --rootfs ${pve.storage}:${svc.disk}`,
+    `  --net0 name=eth0,bridge=${pve.bridge},ip=${ip}`,
+    `  --nameserver ${pve.nameserver}`,
+    pve.unprivileged ? `  --unprivileged` : "",
+    `  --start 0`,
+    `  --onboot ${(svc.startOnBoot ?? pve.startOnBoot) ? 1 : 0}`,
+    `  --mp0 ${volumes.baseConfigPath}/${svc.id},mp=/config`,
+    svc.mediaPath ? `  --mp1 ${volumes.baseMediaPath},mp=/data`  : "",
+    hasDl         ? `  --mp2 ${volumes.baseDownloadPath},mp=/downloads` : "",
+    ...envVars.map(e => `  --env ${e}`),
+  ].filter(Boolean).join(" \\\n");
+}
+
+function buildOCIDeployCommands(svc, pve, volumes) {
+  return [
+    `# ── OCI Deploy: ${svc.name} (VMID ${svc.vmid}) ──`,
+    `# Image: ${svc.ociImage}`,
+    `mkdir -p ${volumes.baseConfigPath}/${svc.id} && chown 100000:100000 ${volumes.baseConfigPath}/${svc.id}`,
+    pctCreateOCI(svc, pve, volumes),
+    `pct start ${svc.vmid}`,
+    `echo "✅ ${svc.name} gestartet – VMID ${svc.vmid}, Port ${svc.port}"`,
+  ].filter(Boolean);
+}
+
+function buildOCIUpdateCommands(svc, pve, volumes) {
+  return [
+    `# ── OCI Update: ${svc.name} (VMID ${svc.vmid}) ──`,
+    `pct stop ${svc.vmid} || true`,
+    `pct destroy ${svc.vmid} --purge`,
+    `mkdir -p ${volumes.baseConfigPath}/${svc.id} && chown 100000:100000 ${volumes.baseConfigPath}/${svc.id}`,
+    pctCreateOCI(svc, pve, volumes),
+    `pct start ${svc.vmid}`,
+    `echo "✅ ${svc.name} aktualisiert auf ${svc.ociImage}"`,
+  ].filter(Boolean);
+}
 function pctCreate(svc, pve, volumes) {
   const ip    = svc.ip ? `${svc.ip}/${pve.subnetCidr},gw=${svc.gw||pve.defaultGw}` : "dhcp";
   const hasDl = ["qbittorrent","sabnzbd","nzbget"].includes(svc.id);
@@ -384,7 +437,16 @@ export default function App() {
     }
     const svcWithVmid = { ...svc, vmid: resolvedVmid };
     setDeploying(p=>({...p,[svc.id]:"running"}));
-    const cmds = buildDeployCommands(svcWithVmid, pve, volumes);
+    const cmds = svc.deployMode === "oci"
+      ? buildOCIDeployCommands(svcWithVmid, pve, volumes)
+      : buildDeployCommands(svcWithVmid, pve, volumes);
+    console_.runSequence(cmds, () => setDeploying(p=>({...p,[svc.id]:"done"})));
+  };
+
+  const updateServiceOCI = (svc) => {
+    const svcWithVmid = { ...svc, vmid: resolveVmid(svc, services, pve.vmidRangeFrom, pve.vmidRangeTo) };
+    setDeploying(p=>({...p,[svc.id]:"updating"}));
+    const cmds = buildOCIUpdateCommands(svcWithVmid, pve, volumes);
     console_.runSequence(cmds, () => setDeploying(p=>({...p,[svc.id]:"done"})));
   };
 
@@ -537,6 +599,7 @@ export default function App() {
                 </span>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {svc.enabled&&<button style={{...st.btn(console_.connected?"#22c55e":"#475569"),opacity:console_.connected?1:0.5}} disabled={!console_.connected||console_.busy} onClick={()=>deployService(svc)}>{deploying[svc.id]==="running"?"⏳ läuft…":"🚀 Deploy"}</button>}
+                  {svc.enabled&&svc.deployMode==="oci"&&<button style={{...st.btn(console_.connected?"#60a5fa":"#475569"),opacity:console_.connected?1:0.5}} disabled={!console_.connected||console_.busy} onClick={()=>updateServiceOCI(svc)} title="OCI Image aktualisieren">{deploying[svc.id]==="updating"?"⏳ update…":"🔄 Update"}</button>}
                   <button style={st.btn("#f59e0b")} onClick={()=>openEdit(svc)}>✏️</button>
                   {svc.enabled&&API_KEY_CMD[svc.id]&&<button style={{...st.btn(console_.connected?"#f59e0b":"#475569"),opacity:console_.connected?1:0.5}} disabled={!console_.connected||console_.busy} onClick={()=>console_.runCapture(API_KEY_CMD[svc.id](svc.vmid),key=>{if(key){updateSvc(svc.id,{apiKey:key});console_.appendLine(`🔑 ${svc.name}: ${key}`,"ok");}else{console_.appendLine(`⚠️ Kein Key gefunden`,"err");}})}>🔑</button>}
                   <button style={st.btn(svc.enabled?"#f59e0b":"#22c55e")} onClick={()=>updateSvc(svc.id,{enabled:!svc.enabled})}>{svc.enabled?"⏼ OFF":"⏻ ON"}</button>
@@ -552,6 +615,17 @@ export default function App() {
                   <span style={{fontSize:10,color:"#475569",textTransform:"uppercase",letterSpacing:"0.05em"}}>Boot</span>
                 </div>
               </div>
+              {/* Deploy Mode + OCI Image */}
+              <div style={{marginTop:10,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+                <div style={{display:"flex",borderRadius:6,overflow:"hidden",border:"1px solid #ffffff11"}}>
+                  {["oci","debian"].map(mode=>(
+                    <button key={mode} onClick={()=>updateSvc(svc.id,{deployMode:mode})} style={{padding:"4px 12px",fontSize:11,fontWeight:600,cursor:"pointer",border:"none",background:svc.deployMode===mode?(mode==="oci"?"#1e3a5f":"#1a2a1a"):"transparent",color:svc.deployMode===mode?(mode==="oci"?"#60a5fa":"#22c55e"):"#475569",textTransform:"uppercase",letterSpacing:"0.05em",transition:"all .2s"}}>
+                      {mode==="oci"?"🐳 OCI":"🐧 Debian"}
+                    </button>
+                  ))}
+                </div>
+                {svc.deployMode==="oci"&&<span style={{fontSize:11,color:"#475569",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={svc.ociImage}>{svc.ociImage}</span>}
+              </div>
             </div>
           ))}
         </>}
@@ -559,7 +633,7 @@ export default function App() {
         {/* ── PROXMOX LXC ── */}
         {tab==="lxc"&&<>
           <div style={{display:"flex",gap:6,marginBottom:18,flexWrap:"wrap"}}>
-            {[["global","⚙️ PVE-Einstellungen"],["create","🛠 pct create"],["conf","📄 .conf Dateien"],["setup","📦 Container-Setup"],["script","📜 Full Deploy Script"],["apikeys","🔑 API-Keys"]].map(([k,l])=>(
+            {[["global","⚙️ PVE-Einstellungen"],["oci","🐳 OCI Deploy"],["create","🛠 pct create (Debian)"],["conf","📄 .conf Dateien"],["setup","📦 Container-Setup"],["script","📜 Full Deploy Script"],["apikeys","🔑 API-Keys"]].map(([k,l])=>(
               <button key={k} style={{...st.btn(lxcSub===k?"#a78bfa":"#64748b"),background:lxcSub===k?"#2d1a4d":"transparent"}} onClick={()=>setLxcSub(k)}>{l}</button>
             ))}
           </div>
@@ -646,6 +720,85 @@ export default function App() {
                 </div>
               ))}
               {enabled.length===0&&<p style={{color:"#475569",fontSize:13}}>Keine aktiven Services.</p>}
+            </div>
+          </>}
+
+          {lxcSub==="oci"&&<>
+            <div style={{...st.card,background:"#0f1a2a",border:"1px solid #3b82f633",marginBottom:16}}>
+              <div style={{fontSize:13,color:"#60a5fa",fontWeight:600,marginBottom:6}}>🐳 OCI-Modus (Proxmox 8.1+)</div>
+              <div style={{fontSize:13,color:"#94a3b8",lineHeight:1.8}}>
+                Statt einem Debian-Template wird direkt ein <strong style={{color:"#e2e8f0"}}>linuxserver.io OCI-Image</strong> als LXC-Container erstellt.<br/>
+                <code style={{color:"#a5f3fc"}}>pct create &lt;vmid&gt; docker.io/linuxserver/&lt;service&gt;:latest</code><br/>
+                Das Image enthält bereits alle Abhängigkeiten – kein manuelles Setup nötig.
+              </div>
+            </div>
+
+            {/* Global OCI Image Tag */}
+            <div style={st.card}>
+              <div style={st.sec}>Globaler Image-Tag</div>
+              <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:14}}>
+                <select style={{...st.inp,maxWidth:200}} defaultValue="latest" onChange={e=>{
+                  const tag=e.target.value;
+                  setServices(s=>s.map(svc=>({...svc,ociImage:svc.ociImage.replace(/:.*$/,`:${tag}`)})));
+                }}>
+                  {["latest","develop","nightly"].map(t=><option key={t} value={t}>{t}</option>)}
+                </select>
+                <span style={{fontSize:12,color:"#64748b"}}>Gilt für alle Services gleichzeitig</span>
+              </div>
+
+              {/* Per-service OCI image */}
+              <div style={st.sec}>OCI-Images pro Service</div>
+              {enabled.map(svc=>(
+                <div key={svc.id} style={{padding:"10px 0",borderBottom:"1px solid #ffffff08",display:"grid",gridTemplateColumns:"140px 1fr auto",gap:10,alignItems:"center"}}>
+                  <div style={{fontWeight:600,fontSize:13,color:"#94a3b8",display:"flex",alignItems:"center",gap:6}}>
+                    {svc.icon} {svc.name}
+                    <span style={st.bdg(svc.deployMode==="oci"?"#60a5fa":"#22c55e")}>{svc.deployMode==="oci"?"OCI":"Debian"}</span>
+                  </div>
+                  <input style={st.inp} value={svc.ociImage||""} onChange={e=>updateSvc(svc.id,{ociImage:e.target.value})} placeholder="docker.io/linuxserver/..."/>
+                  <div style={{display:"flex",gap:6}}>
+                    <button style={st.btn(svc.deployMode==="oci"?"#60a5fa":"#475569")} onClick={()=>updateSvc(svc.id,{deployMode:svc.deployMode==="oci"?"debian":"oci"})}>
+                      {svc.deployMode==="oci"?"→ Debian":"→ OCI"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <div style={{marginTop:10,display:"flex",gap:8}}>
+                <button style={st.btn("#60a5fa")} onClick={()=>setServices(s=>s.map(svc=>({...svc,deployMode:"oci"})))}>🐳 Alle OCI</button>
+                <button style={st.btn("#22c55e")} onClick={()=>setServices(s=>s.map(svc=>({...svc,deployMode:"debian"})))}>🐧 Alle Debian</button>
+              </div>
+            </div>
+
+            {/* pct create OCI commands */}
+            <div style={{...st.card,marginTop:4}}>
+              <div style={st.sec}>Generierte pct create Befehle (OCI)</div>
+              {enabled.filter(s=>s.deployMode==="oci").map(svc=>(
+                <CodeBlock key={svc.id} title={`${svc.icon} ${svc.name} – ${svc.ociImage}`} code={pctCreateOCI(svc,pve,volumes)}/>
+              ))}
+              {enabled.filter(s=>s.deployMode==="oci").length===0&&<p style={{color:"#475569",fontSize:13}}>Kein Service im OCI-Modus.</p>}
+            </div>
+
+            {/* Update script */}
+            <div style={{...st.card,marginTop:4}}>
+              <div style={st.sec}>🔄 Update-Skript (neues Image pullen)</div>
+              <p style={{fontSize:12,color:"#64748b",marginBottom:12}}>Stoppt den Container, löscht ihn, erstellt ihn neu mit aktuellem Image. Config bleibt erhalten (Bind-Mount).</p>
+              <CodeBlock title="oci-update-all.sh" code={[
+                `#!/bin/bash`,
+                `# OCI Update Script – alle Services`,
+                `# Generiert: ${new Date().toLocaleString("de-DE")}`,
+                `set -e`,
+                ``,
+                ...enabled.filter(s=>s.deployMode==="oci").flatMap(svc=>[
+                  `# ── ${svc.icon} ${svc.name} (VMID ${svc.vmid}) ──`,
+                  `pct stop ${svc.vmid} 2>/dev/null || true`,
+                  `pct destroy ${svc.vmid} --purge`,
+                  `mkdir -p ${volumes.baseConfigPath}/${svc.id} && chown 100000:100000 ${volumes.baseConfigPath}/${svc.id}`,
+                  pctCreateOCI(svc,pve,volumes),
+                  `pct start ${svc.vmid}`,
+                  `echo "✅ ${svc.name} aktualisiert"`,
+                  ``,
+                ]),
+                `echo "🎉 Alle OCI-Container aktualisiert"`,
+              ].join("\n")}/>
             </div>
           </>}
 
@@ -755,6 +908,23 @@ export default function App() {
                   <input style={{...st.inp,borderColor:k==="vmid"&&(editBuf.vmid<pve.vmidRangeFrom||editBuf.vmid>pve.vmidRangeTo)?"#ef444466":"#ffffff22"}} type={t} value={editBuf[k]||""} onChange={e=>setEditBuf(b=>({...b,[k]:t==="number"?+e.target.value:e.target.value}))}/>
                 </div>
               ))}
+              {/* Deploy Mode */}
+              <div style={{gridColumn:"1/-1"}}>
+                <label style={st.lbl}>Deploy-Modus</label>
+                <div style={{display:"flex",borderRadius:6,overflow:"hidden",border:"1px solid #ffffff11",width:"fit-content"}}>
+                  {["oci","debian"].map(mode=>(
+                    <button key={mode} onClick={()=>setEditBuf(b=>({...b,deployMode:mode}))} style={{padding:"6px 18px",fontSize:12,fontWeight:600,cursor:"pointer",border:"none",background:editBuf.deployMode===mode?(mode==="oci"?"#1e3a5f":"#1a2a1a"):"transparent",color:editBuf.deployMode===mode?(mode==="oci"?"#60a5fa":"#22c55e"):"#475569",textTransform:"uppercase",transition:"all .2s"}}>
+                      {mode==="oci"?"🐳 OCI":"🐧 Debian"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {editBuf.deployMode==="oci"&&(
+                <div style={{gridColumn:"1/-1"}}>
+                  <label style={st.lbl}>OCI Image</label>
+                  <input style={st.inp} value={editBuf.ociImage||""} onChange={e=>setEditBuf(b=>({...b,ociImage:e.target.value}))} placeholder="docker.io/linuxserver/..."/>
+                </div>
+              )}
               <div style={{display:"flex",alignItems:"center",gap:12,gridColumn:"1/-1"}}><Toggle value={editBuf.startOnBoot??true} onChange={v=>setEditBuf(b=>({...b,startOnBoot:v}))}/><span style={{fontSize:13,color:"#94a3b8"}}>Start on Boot</span></div>
             </div>
             {editBuf.vmid!=null&&(editBuf.vmid<pve.vmidRangeFrom||editBuf.vmid>pve.vmidRangeTo)&&(
