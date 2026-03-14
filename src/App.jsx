@@ -1,20 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const DEFAULT_SERVICES = [
-  { id: "sonarr",       name: "Sonarr",       icon: "📺", port: 8989,  enabled: true,  configPath: "/config/sonarr",      mediaPath: "/media/tv",     apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2000, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/sonarr:latest" },
-  { id: "radarr",       name: "Radarr",       icon: "🎬", port: 7878,  enabled: true,  configPath: "/config/radarr",      mediaPath: "/media/movies", apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2001, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/radarr:latest" },
-  { id: "prowlarr",     name: "Prowlarr",     icon: "🔍", port: 9696,  enabled: true,  configPath: "/config/prowlarr",    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2002, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/prowlarr:latest" },
-  { id: "lidarr",       name: "Lidarr",       icon: "🎵", port: 8686,  enabled: false, configPath: "/config/lidarr",      mediaPath: "/media/music",  apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2003, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/lidarr:latest" },
-  { id: "jackett",      name: "Jackett",      icon: "🧥", port: 9117,  enabled: false, configPath: "/config/jackett",     mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2004, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/jackett:latest" },
-  { id: "bazarr",       name: "Bazarr",       icon: "💬", port: 6767,  enabled: false, configPath: "/config/bazarr",      mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2005, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/bazarr:latest" },
-  { id: "qbittorrent",  name: "qBittorrent",  icon: "⬇️", port: 8080,  enabled: true,  configPath: "/config/qbittorrent", mediaPath: "/downloads",    apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2006, cores: 2, mem: 1024, disk: 8,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/qbittorrent:latest" },
-  { id: "overseerr",    name: "Overseerr",    icon: "🎟️", port: 5055,  enabled: false, configPath: "/config/overseerr",   mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2007, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/overseerr:latest" },
-  { id: "jellyfin",     name: "Jellyfin",     icon: "🍇", port: 8096,  enabled: false, configPath: "/config/jellyfin",    mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2008, cores: 2, mem: 2048, disk: 8,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/jellyfin:latest" },
-  { id: "plex",         name: "Plex",         icon: "🟡", port: 32400, enabled: false, configPath: "/config/plex",        mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2009, cores: 2, mem: 2048, disk: 8,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/plex:latest" },
-  { id: "tautulli",     name: "Tautulli",     icon: "📊", port: 8181,  enabled: false, configPath: "/config/tautulli",    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2010, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/tautulli:latest" },
-  { id: "flaresolverr", name: "FlareSolverr", icon: "🔓", port: 8191,  enabled: false, configPath: "",                    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2011, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/flaresolverr/flaresolverr:latest" },
-  { id: "sabnzbd",      name: "SABnzbd",      icon: "📡", port: 8090,  enabled: false, configPath: "/config/sabnzbd",     mediaPath: "/downloads",    apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2012, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/sabnzbd:latest" },
-  { id: "mylar3",       name: "Mylar3",       icon: "📰", port: 8090,  enabled: false, configPath: "/config/mylar3",      mediaPath: "/media/comics", apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2013, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "docker.io/linuxserver/mylar3:latest" },
+  { id: "sonarr",       name: "Sonarr",       icon: "📺", port: 8989,  enabled: true,  configPath: "/config/sonarr",      mediaPath: "/media/tv",     apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2000, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/sonarr:latest" },
+  { id: "radarr",       name: "Radarr",       icon: "🎬", port: 7878,  enabled: true,  configPath: "/config/radarr",      mediaPath: "/media/movies", apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2001, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/radarr:latest" },
+  { id: "prowlarr",     name: "Prowlarr",     icon: "🔍", port: 9696,  enabled: true,  configPath: "/config/prowlarr",    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2002, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/prowlarr:latest" },
+  { id: "lidarr",       name: "Lidarr",       icon: "🎵", port: 8686,  enabled: false, configPath: "/config/lidarr",      mediaPath: "/media/music",  apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2003, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/lidarr:latest" },
+  { id: "jackett",      name: "Jackett",      icon: "🧥", port: 9117,  enabled: false, configPath: "/config/jackett",     mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2004, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/jackett:latest" },
+  { id: "bazarr",       name: "Bazarr",       icon: "💬", port: 6767,  enabled: false, configPath: "/config/bazarr",      mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2005, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/bazarr:latest" },
+  { id: "qbittorrent",  name: "qBittorrent",  icon: "⬇️", port: 8080,  enabled: true,  configPath: "/config/qbittorrent", mediaPath: "/downloads",    apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2006, cores: 2, mem: 1024, disk: 8,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/qbittorrent:latest" },
+  { id: "overseerr",    name: "Overseerr",    icon: "🎟️", port: 5055,  enabled: false, configPath: "/config/overseerr",   mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2007, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/overseerr:latest" },
+  { id: "jellyfin",     name: "Jellyfin",     icon: "🍇", port: 8096,  enabled: false, configPath: "/config/jellyfin",    mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2008, cores: 2, mem: 2048, disk: 8,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/jellyfin:latest" },
+  { id: "plex",         name: "Plex",         icon: "🟡", port: 32400, enabled: false, configPath: "/config/plex",        mediaPath: "/media",        apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2009, cores: 2, mem: 2048, disk: 8,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/plex:latest" },
+  { id: "tautulli",     name: "Tautulli",     icon: "📊", port: 8181,  enabled: false, configPath: "/config/tautulli",    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2010, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/tautulli:latest" },
+  { id: "flaresolverr", name: "FlareSolverr", icon: "🔓", port: 8191,  enabled: false, configPath: "",                    mediaPath: "",              apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2011, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "ghcr.io/flaresolverr/flaresolverr:latest" },
+  { id: "sabnzbd",      name: "SABnzbd",      icon: "📡", port: 8090,  enabled: false, configPath: "/config/sabnzbd",     mediaPath: "/downloads",    apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2012, cores: 1, mem: 512,  disk: 4,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/sabnzbd:latest" },
+  { id: "mylar3",       name: "Mylar3",       icon: "📰", port: 8090,  enabled: false, configPath: "/config/mylar3",      mediaPath: "/media/comics", apiKey: "", restartPolicy: "unless-stopped", startOnBoot: true, vmid: 2013, cores: 1, mem: 256,  disk: 2,  ip: "", gw: "", deployMode: "oci", ociImage: "lscr.io/linuxserver/mylar3:latest" },
 ];
 
 const RESTART_POLICIES = ["no","always","on-failure","unless-stopped"];
@@ -352,6 +352,7 @@ export default function App() {
   const [sshOpen,     setSshOpen]   = useState(false);
   const [volOpen,     setVolOpen]   = useState(false);
   const [pveOpen,     setPveOpen]   = useState(false);
+  const [lxcStatus,   setLxcStatus]  = useState({});
   const [storageList, setStorageList]= useState(PVE_STORAGE_OPTS);
   const [vmidWarnings,setVmidWarnings]=useState({});
   const consoleRef = useRef(null);
@@ -461,7 +462,7 @@ export default function App() {
     console_.runSequence(cmds, () => setDestroying(p=>({...p,[svc.id]:"done"})));
   };
 
-  const enabled = services.filter(s=>s.enabled);
+  const enabled = services.filter(s => s.enabled);
   const TABS = [["overview","📋 Übersicht"],["config","⚙️ Services"],["lxc","🖥 Proxmox LXC"],["ssh","📦 WS-Bridge"],["compose","🐳 Compose"]];
 
   return (
@@ -589,7 +590,15 @@ export default function App() {
           </div>
 
           {/* Service Cards */}
-          <p style={{color:"#64748b",fontSize:13,marginBottom:12}}>Individuelle Service-Einstellungen & LXC-Ressourcen.</p>
+          <div style={{...st.row, marginBottom:12}}>
+            <p style={{color:"#64748b",fontSize:13,margin:0}}>Individuelle Service-Einstellungen & LXC-Ressourcen.</p>
+            <button
+              style={{...st.btn(console_.connected?"#60a5fa":"#475569"), opacity:console_.connected?1:0.5}}
+              disabled={!console_.connected||console_.busy}
+              onClick={()=>services.filter(s=>s.enabled).forEach(svc=>fetchLxcStatus(svc))}
+              title="Status aller Container aktualisieren"
+            >🔄 Alle aktualisieren</button>
+          </div>
           {services.map(svc=>(
             <div key={svc.id} style={{...st.card,opacity:svc.enabled?1:0.55,borderColor:vmidWarnings[svc.id]?"#ef444433":"#ffffff11"}}>
               <div style={st.row}>
@@ -615,6 +624,61 @@ export default function App() {
                   <span style={{fontSize:10,color:"#475569",textTransform:"uppercase",letterSpacing:"0.05em"}}>Boot</span>
                 </div>
               </div>
+
+              {/* Live Status */}
+              {(() => {
+                const ls = lxcStatus[svc.id];
+                if (!ls && !console_.connected) return null;
+                const statusColor = ls?.online ? "#22c55e" : ls?.status === "stopped" ? "#ef4444" : "#f59e0b";
+                const statusLabel = ls?.loading ? "…" : ls?.online ? "running" : ls?.status || (console_.connected ? "—" : "nicht verbunden");
+                return (
+                  <div style={{marginTop:10, background:"#0f1117", border:"1px solid #ffffff0a", borderRadius:8, padding:"10px 14px"}}>
+                    <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:ls&&!ls.loading&&!ls.error?8:0}}>
+                      <div style={{display:"flex", alignItems:"center", gap:8}}>
+                        <span style={{fontSize:10,color:"#475569",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em"}}>Live Status</span>
+                        {ls && !ls.loading && (
+                          <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,color:statusColor,fontWeight:600}}>
+                            <span style={{width:6,height:6,borderRadius:"50%",background:statusColor,display:"inline-block",boxShadow:`0 0 5px ${statusColor}`}}/>
+                            {statusLabel}
+                          </span>
+                        )}
+                        {ls?.loading && <span style={{fontSize:11,color:"#f59e0b"}}>⏳ lädt…</span>}
+                        {ls?.error   && <span style={{fontSize:11,color:"#ef4444"}}>⚠️ nicht erreichbar</span>}
+                      </div>
+                      <button
+                        style={{...st.btn(console_.connected?"#60a5fa":"#475569"),padding:"2px 8px",fontSize:11,opacity:console_.connected?1:0.4}}
+                        disabled={!console_.connected||console_.busy}
+                        onClick={()=>fetchLxcStatus(svc)}
+                      >↺</button>
+                    </div>
+                    {ls && !ls.loading && !ls.error && (
+                      <div style={{display:"flex", gap:16, flexWrap:"wrap"}}>
+                        {[
+                          ["Cores", ls.cores !== "—" ? ls.cores : svc.cores, ls.cores !== "—" && +ls.cores !== svc.cores],
+                          ["RAM",   ls.mem   !== "—" ? ls.mem+"MB" : svc.mem+"MB", ls.mem !== "—" && +ls.mem !== svc.mem],
+                          ["Disk",  ls.disk  !== "—" ? ls.disk : svc.disk+"GB", false],
+                          ["IP",    ls.ip    !== "—" ? ls.ip : svc.ip||"DHCP", ls.ip !== "—" && ls.ip !== (svc.ip||"DHCP")],
+                        ].map(([label, val, mismatch]) => (
+                          <div key={label} style={{display:"flex",flexDirection:"column",gap:2}}>
+                            <span style={{fontSize:10,color:"#475569",textTransform:"uppercase"}}>{label}</span>
+                            <span style={{fontSize:12,color:mismatch?"#f59e0b":"#22c55e",fontWeight:600}}>
+                              {val}
+                              {mismatch && <span style={{fontSize:10,color:"#f59e0b",marginLeft:4}} title="Wert weicht von Konfiguration ab">⚠</span>}
+                            </span>
+                          </div>
+                        ))}
+                        {ls.ip && ls.ip !== "—" && ls.ip !== "DHCP" && ls.ip !== svc.ip && (
+                          <button
+                            style={{...st.btn("#f59e0b"),fontSize:10,padding:"2px 8px",alignSelf:"flex-end"}}
+                            onClick={()=>updateSvc(svc.id,{ip:ls.ip})}
+                            title="IP aus Live-Status in Konfiguration übernehmen"
+                          >← IP übernehmen</button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               {/* Deploy Mode + OCI Image */}
               <div style={{marginTop:10,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
                 <div style={{display:"flex",borderRadius:6,overflow:"hidden",border:"1px solid #ffffff11"}}>
