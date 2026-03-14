@@ -410,7 +410,13 @@ export default function App() {
       const raw = localStorage.getItem("arr-tool-config");
       if (raw) {
         const d = JSON.parse(raw);
-        if (d.services) setServices(d.services);
+        if (d.services) {
+          const merged = DEFAULT_SERVICES.map(def => {
+            const saved = d.services.find(s => s.id === def.id);
+            return saved ? { ...def, ...saved } : def;
+          });
+          setServices(merged);
+        }
         if (d.network)  setNetwork(d.network);
         if (d.volumes)  setVolumes(d.volumes);
         if (d.ssh)      setSsh(d.ssh);
@@ -688,7 +694,7 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-                {svc.deployMode==="oci"&&<a href={`https://${svc.ociImage.replace(/:.*$/,"")}`} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:"#3b82f6",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textDecoration:"none"}} title={svc.ociImage}>{svc.ociImage}</a>}
+                {svc.deployMode==="oci"&&<span style={{fontSize:11,color:"#475569",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={svc.ociImage}>{svc.ociImage}</span>}
               </div>
             </div>
           ))}
