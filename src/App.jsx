@@ -3,7 +3,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 // ── Proxmox REST API Client ──────────────────────────────────────────────────
 class PveAPI {
   constructor(cfg) {
-    this.base    = `https://${cfg.host}:${cfg.apiPort||8006}/api2/json`;
+    this.target  = `${cfg.host}:${cfg.apiPort||8006}`;
+    this.base    = `/pve-api`;
     this.node    = cfg.node || "pve";
     this.mode    = cfg.authMode || "token";
     this.tokenId = cfg.tokenId || "";
@@ -14,14 +15,15 @@ class PveAPI {
     this.csrf    = null;
   }
   headers(isForm) {
-    if (this.mode === "token") return { "Authorization":`PVEAPIToken=${this.tokenId}=${this.secret}`, ...(isForm?{}:{"Content-Type":"application/json"}) };
-    const h = isForm ? {} : { "Content-Type":"application/json" };
+    const base = { "X-PVE-Target": this.target };
+    if (this.mode === "token") return { ...base, "Authorization":`PVEAPIToken=${this.tokenId}=${this.secret}`, ...(isForm?{}:{"Content-Type":"application/json"}) };
+    const h = { ...base, ...(isForm ? {} : { "Content-Type":"application/json" }) };
     if (this.ticket) { h["Cookie"]=`PVEAuthCookie=${this.ticket}`; h["CSRFPreventionToken"]=this.csrf; }
     return h;
   }
   async login() {
     if (this.mode==="token") return true;
-    const r = await fetch(`${this.base}/access/ticket`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({username:this.user,password:this.password})});
+    const r = await fetch(`${this.base}/access/ticket`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded","X-PVE-Target":this.target},body:new URLSearchParams({username:this.user,password:this.password})});
     const j = await r.json();
     if (j?.data) { this.ticket=j.data.ticket; this.csrf=j.data.CSRFPreventionToken; return true; }
     return false;
@@ -83,8 +85,8 @@ const PVE_STORAGE_OPTS = ["local-lvm","local","local-zfs","ceph","nfs"];
 
 const DEFAULT_NETWORK = { name:"arr-network", driver:"bridge", subnet:"172.20.0.0/16", gateway:"172.20.0.1", enableIPv6:false, internal:false };
 const DEFAULT_VOLUMES = { baseConfigPath:"/opt/arr/config", baseMediaPath:"/mnt/media", baseDownloadPath:"/mnt/downloads", puid:"1000", pgid:"1000", tz:"Europe/Berlin" };
-const DEFAULT_PVE     = { node:"pve", bridge:"vmbr1", storage:"local-lvm", osTemplate:"local:vztmpl/debian-13-standard_13.1-2_amd64.tar.zst", defaultGw:"10.10.10.1", subnetCidr:"24", nameserver:"1.1.1.1", unprivileged:true, startOnBoot:true, osType:"debian", vmidRangeFrom:2000, vmidRangeTo:3000 };
-const DEFAULT_API     = { host:"", apiPort:"8006", authMode:"token", tokenId:"root@pam!arr-tool", secret:"", user:"root@pam", password:"" };
+const DEFAULT_PVE     = { node:"hetzner", bridge:"vmbr1", storage:"local-lvm", osTemplate:"local:vztmpl/debian-13-standard_13.1-2_amd64.tar.zst", defaultGw:"10.10.10.1", subnetCidr:"24", nameserver:"1.1.1.1", unprivileged:true, startOnBoot:true, osType:"debian", vmidRangeFrom:2000, vmidRangeTo:3000 };
+const DEFAULT_API     = { host:"netcup.acidhosting.de", apiPort:"8006", authMode:"token", tokenId:"root@pam!proxarr", secret:"ff9aaab8-644e-4564-8fd8-3de00dbc417a", user:"root@pam", password:"" };
 
 // ── VMID helpers ─────────────────────────────────────────────────────────────
 function assignVmidsFromRange(svcs, from, to) {
