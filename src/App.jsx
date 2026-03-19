@@ -56,7 +56,7 @@ class PveAPI {
 async function waitTask(api, upid, onLog) {
   for (let i=0; i<120; i++) {
     await new Promise(r=>setTimeout(r,2000));
-    try { const t=await api.taskStatus(upid); if(t?.data?.status==="stopped") return t.data.exitstatus==="OK"; if(onLog&&t?.data?.status) onLog(t.data.status); } catch{}
+    try { const t=await api.taskStatus(upid); if(t?.data?.status==="stopped") return t.data.exitstatus==="OK"; if(onLog&&t?.data?.status) onLog(t.data.status); } catch{ /* retry on error */ }
   }
   return false;
 }
@@ -148,7 +148,7 @@ function buildCreateParams(svc, pve, volumes) {
 function pctCreateStr(svc, pve, volumes) {
   const { params, mounts } = buildCreateParams(svc, pve, volumes);
   const all = { ...params, ...mounts };
-  return Object.entries(all).map(([k,v])=>`  --${k} ${v}`).join(" \\\n").replace(/^  /,"pct create ");
+  return Object.entries(all).map(([k,v])=>`${" ".repeat(2)}--${k} ${v}`).join(" \\\n").replace(/^ {2}/,"pct create ");
 }
 
 // ── Styles ───────────────────────────────────────────────────────────────────
@@ -234,20 +234,20 @@ export default function App() {
       else seen.add(svc.vmid);
     });
     setVmidWarnings(w);
-  },[services,pve.vmidRangeFrom,pve.vmidRangeTo]);
+  },[services, pve.vmidRangeFrom, pve.vmidRangeTo, pve]);
 
   // ── Persist ──
   const handleSave = ()=>{
-    try{ const s=JSON.stringify({services,network,volumes,pve,pveApi}); try{window.storage?.set("arr-tool-config",s);}catch{} localStorage.setItem("arr-tool-config",s); setSaveState("saved"); }catch{ setSaveState("error"); }
+    try{ const s=JSON.stringify({services,network,volumes,pve,pveApi}); try{window.storage?.set("arr-tool-config",s);}catch{/* ignore window.storage error */} localStorage.setItem("arr-tool-config",s); setSaveState("saved"); }catch{ setSaveState("error"); }
     setTimeout(()=>setSaveState("idle"),2500);
   };
   const handleLoad = ()=>{
     try{
       let raw=null;
-      try{ window.storage?.get("arr-tool-config").then(r=>{ if(r?.value) applyConfig(JSON.parse(r.value)); }); }catch{}
+      try{ window.storage?.get("arr-tool-config").then(r=>{ if(r?.value) applyConfig(JSON.parse(r.value)); }); }catch{/* ignore window.storage error */}
       raw=localStorage.getItem("arr-tool-config");
       if(raw) applyConfig(JSON.parse(raw));
-    }catch{}
+    }catch{/* ignore load error */}
   };
   const applyConfig = d=>{
     if(d.services) setServices(d.services);
