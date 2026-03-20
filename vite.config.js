@@ -112,7 +112,7 @@ function pveProxy() {
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/proxarr/',
+  base: process.env.BASE_URL || './',
   plugins: [pveProxy(), react()],
   server: {
     cors: false,  // Vite's eigenen CORS-Handler deaktivieren – wir machen das selbst

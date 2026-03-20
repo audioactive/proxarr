@@ -1,13 +1,28 @@
 {
-  "name": "arr-tool",
-  "private": true,
-  "version": "0.0.0",
+  "name": "proxarr",
+  "version": "1.0.0",
+  "description": "Proxmox *arr stack deployer – one-command LXC deployment tool",
   "type": "module",
+  "bin": {
+    "proxarr": "./server.js"
+  },
+  "files": [
+    "server.js",
+    "dist/**"
+  ],
   "scripts": {
     "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 vite",
     "build": "vite build",
+    "start": "node server.js",
+    "prepublishOnly": "npm run build",
     "lint": "eslint .",
     "preview": "vite preview"
+  },
+  "keywords": ["proxmox", "arr", "sonarr", "radarr", "lxc", "deploy"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/audioactive/proxarr.git"
   },
   "dependencies": {
     "react": "^19.2.0",
