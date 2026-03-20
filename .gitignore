@@ -26,3 +26,4 @@ dist-ssr
 # Test & local files
 test-deploy-all.cjs
 .env
+.wrangler

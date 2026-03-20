@@ -129,22 +129,20 @@ function buildCreateParams(svc, pve, volumes) {
   };
   if (isOCI) { p.arch="amd64"; p.ostype="unmanaged"; }
   else        p.ostype = pve.osType;
-  // Bind mount points – extracted separately (API tokens can't set bind mounts)
-  const mounts = {};
-  mounts.mp0 = `${volumes.baseConfigPath}/${svc.id},mp=/config`;
-  if (svc.mediaPath) mounts.mp1 = `${volumes.baseMediaPath},mp=/data`;
-  if (hasDl)         mounts.mp2 = `${volumes.baseDownloadPath},mp=/downloads`;
+  // Bind mount points – included directly in create params
+  if (svc.configPath) p.mp0 = `${volumes.baseConfigPath}/${svc.id},mp=/config`;
+  if (svc.mediaPath) p.mp1 = `${volumes.baseMediaPath},mp=/data`;
+  if (hasDl)         p.mp2 = `${volumes.baseDownloadPath},mp=/downloads`;
   const envs = [`PUID=1000`,`PGID=1000`,`TZ=${volumes.tz}`,svc.apiKey?`API_KEY=${svc.apiKey}`:null].filter(Boolean);
   p.description = envs.join("\n");
   p.tags = [svc.id, isOCI?"oci":"lxc", "arr-tool"].join(";");
-  return { params: p, mounts };
+  return { params: p };
 }
 
 // ── pct create string (for display only) ─────────────────────────────────────
 function pctCreateStr(svc, pve, volumes) {
-  const { params, mounts } = buildCreateParams(svc, pve, volumes);
-  const all = { ...params, ...mounts };
-  return Object.entries(all).map(([k,v])=>`${" ".repeat(2)}--${k} ${v}`).join(" \\\n").replace(/^ {2}/,"pct create ");
+  const { params } = buildCreateParams(svc, pve, volumes);
+  return Object.entries(params).map(([k,v])=>`${" ".repeat(2)}--${k} ${v}`).join(" \\\n").replace(/^ {2}/,"pct create ");
 }
 
 // ── Styles ───────────────────────────────────────────────────────────────────
@@ -322,30 +320,15 @@ export default function App() {
     setDeploying(p=>({...p,[svc.id]:"running"}));
     try{
       log(`🚀 Deploy ${svc.name} (VMID ${vmid}, ${(svc.deployMode||"oci").toUpperCase()})…`);
-      const { params, mounts } = buildCreateParams(svcR,pve,volumes);
-      // Step 1: Create container (without bind mounts – API tokens can't set them)
+      const { params } = buildCreateParams(svcR,pve,volumes);
+      // Step 1: Create container (with bind mounts included in params)
       const res=await a.ctCreate(params);
       const upid=res?.data;
       if(!upid) throw new Error("Kein Task-UPID");
       log(`⏳ Container wird erstellt…`);
       const ok=await waitTask(a,upid,s=>{ if(s) log(s); });
       if(!ok) throw new Error("Container-Erstellung fehlgeschlagen");
-      // Step 2: Add bind mounts via local pct set (runs on PVE host)
-      if (Object.keys(mounts).length) {
-        log(`📁 Bind-Mounts werden gesetzt…`);
-        const mpRes = await fetch('/pve-local/pct-mountpoints', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ vmid, ...mounts })
-        });
-        if (!mpRes.ok) {
-          const err = await mpRes.json().catch(()=>({}));
-          log(`⚠️ Bind-Mounts fehlgeschlagen: ${err.error||mpRes.statusText} – Container erstellt aber ohne Mounts`,"warn");
-        } else {
-          log(`✅ Bind-Mounts gesetzt`);
-        }
-      }
-      // Step 3: Start container
+      // Step 2: Start container
       await a.ctStart(vmid);
       log(`✅ ${svc.name} deployed & gestartet`,"ok");
       setDeploying(p=>({...p,[svc.id]:"done"}));
