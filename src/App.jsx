@@ -89,8 +89,8 @@ const PVE_STORAGE_OPTS = ["local-lvm","local","local-zfs","ceph","nfs"];
 
 const DEFAULT_NETWORK = { name:"arr-network", driver:"bridge", subnet:"172.20.0.0/16", gateway:"172.20.0.1", enableIPv6:false, internal:false };
 const DEFAULT_VOLUMES = { baseConfigPath:"/opt/arr/config", baseMediaPath:"/mnt/media", baseDownloadPath:"/mnt/downloads", puid:"1000", pgid:"1000", tz:"Europe/Berlin" };
-const DEFAULT_PVE     = { node:"netcup", bridge:"vmbr1", storage:"netcup-data", osTemplate:"local:vztmpl/debian-13-standard_13.1-2_amd64.tar.zst", defaultGw:"10.10.10.1", subnetCidr:"24", nameserver:"1.1.1.1", unprivileged:true, startOnBoot:true, osType:"debian", vmidRangeFrom:2000, vmidRangeTo:3000 };
-const DEFAULT_API     = { host:"netcup.acidhosting.de", apiPort:"8006", authMode:"token", tokenId:"root@pam!proxarr", secret:"ff9aaab8-644e-4564-8fd8-3de00dbc417a", user:"root@pam", password:"" };
+const DEFAULT_PVE     = { node:"pve", bridge:"vmbr0", storage:"local-lvm", osTemplate:"local:vztmpl/debian-13-standard_13.1-2_amd64.tar.zst", defaultGw:"", subnetCidr:"24", nameserver:"1.1.1.1", unprivileged:true, startOnBoot:true, osType:"debian", vmidRangeFrom:2000, vmidRangeTo:3000 };
+const DEFAULT_API     = { host:"", apiPort:"8006", authMode:"token", tokenId:"", secret:"", user:"root@pam", password:"" };
 
 // ── VMID helpers ─────────────────────────────────────────────────────────────
 function assignVmidsFromRange(svcs, from, to) {
