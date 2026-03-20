@@ -209,6 +209,7 @@ export default function App() {
   const [volOpen,     setVolOpen]   = useState(false);
   const [pveOpen,     setPveOpen]   = useState(false);
   const [apiOpen,     setApiOpen]   = useState(true);
+  const [expandedSvcs,setExpandedSvcs]=useState(new Set());
   const [vmidWarnings,setVmidWarnings]=useState({});
   const apiRef = useRef(null);
   const logRef = useRef(null);
@@ -553,20 +554,28 @@ export default function App() {
           {services.map(svc=>{
             const ls=lxcStatus[svc.id];
             const sc=ls?.online?"#22c55e":ls?.status==="stopped"?"#ef4444":"#64748b";
+            const isOpen=expandedSvcs.has(svc.id);
+            const toggleOpen=()=>setExpandedSvcs(s=>{const n=new Set(s);n.has(svc.id)?n.delete(svc.id):n.add(svc.id);return n;});
             return (
               <div key={svc.id} style={{...st.card,opacity:svc.enabled?1:0.55,borderColor:vmidWarnings[svc.id]?"#ef444433":"#ffffff11"}}>
-                <div style={st.row}>
-                  <span style={st.sname}>
+                {/* Compact header – always visible */}
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:13,color:"#475569",transform:isOpen?"rotate(90deg)":"none",display:"inline-block",transition:"transform .2s",cursor:"pointer"}} onClick={toggleOpen}>›</span>
+                  <span style={{...st.sname,flex:1,cursor:"pointer"}} onClick={toggleOpen}>
                     {svc.icon} {svc.name}
-                    {vmidWarnings[svc.id]&&<span style={st.bdg("#ef4444")}>⚠️</span>}
-                    {ls&&!ls.loading&&<span style={{...st.bdg(sc),display:"inline-flex",alignItems:"center",gap:4}}><span style={{width:6,height:6,borderRadius:"50%",background:sc}}/>{ls.status}</span>}
-                    {ls?.loading&&<span style={st.bdg("#f59e0b")}>⏳</span>}
                   </span>
+                  <span style={{width:10,height:10,borderRadius:"50%",background:ls?.online?"#22c55e":ls?.status==="stopped"?"#ef4444":"#64748b",flexShrink:0}} title={ls?.status||"unbekannt"}/>
+                  <button style={st.btn(svc.enabled?"#f59e0b":"#22c55e")} onClick={e=>{e.stopPropagation();updateSvc(svc.id,{enabled:!svc.enabled});}}>{svc.enabled?"OFF":"ON"}</button>
+                </div>
+
+                {/* Expanded content */}
+                {isOpen&&<>
+                <div style={{...st.row,marginTop:10}}>
+                  <span style={{fontSize:0}}/>  {/* spacer */}
                   <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
                     {svc.enabled&&<button style={{...st.btn(apiConnected?"#22c55e":"#475569"),opacity:apiConnected?1:0.5}} disabled={!apiConnected} onClick={()=>deployServiceApi(svc)}>{deploying[svc.id]==="running"?"⏳":deploying[svc.id]==="done"?"✅":"🚀"}</button>}
                     {svc.enabled&&svc.deployMode==="oci"&&<button style={{...st.btn(apiConnected?"#60a5fa":"#475569"),opacity:apiConnected?1:0.5}} disabled={!apiConnected} onClick={async()=>{await destroyServiceApi(svc);setTimeout(()=>deployServiceApi(svc),2000);}} title="Update (destroy+recreate)">🔄</button>}
                     <button style={st.btn("#f59e0b")} onClick={()=>openEdit(svc)}>✏️</button>
-                    <button style={st.btn(svc.enabled?"#f59e0b":"#22c55e")} onClick={()=>updateSvc(svc.id,{enabled:!svc.enabled})}>{svc.enabled?"OFF":"ON"}</button>
                     {svc.enabled&&<><button style={{...st.btn(apiConnected?"#22c55e":"#475569"),opacity:apiConnected?1:0.5,fontSize:11}} disabled={!apiConnected} onClick={()=>ctAction(svc,"start")}>▶</button><button style={{...st.btn(apiConnected?"#ef4444":"#475569"),opacity:apiConnected?1:0.5,fontSize:11}} disabled={!apiConnected} onClick={()=>ctAction(svc,"stop")}>■</button><button style={{...st.btn(apiConnected?"#f59e0b":"#475569"),opacity:apiConnected?1:0.5,fontSize:11}} disabled={!apiConnected} onClick={()=>ctAction(svc,"restart")}>↻</button></>}
                     {svc.enabled&&<button style={{...st.btn(apiConnected?"#ef4444":"#475569"),opacity:apiConnected?1:0.5}} disabled={!apiConnected} onClick={()=>destroyServiceApi(svc)}>{destroying[svc.id]==="running"?"⏳":"🗑"}</button>}
                     {apiConnected&&<button style={{...st.btn("#60a5fa"),fontSize:11,padding:"3px 8px"}} onClick={()=>fetchAllStatus()}>↺</button>}
@@ -610,6 +619,7 @@ export default function App() {
                   </div>
                   {svc.deployMode==="oci"&&<span style={{fontSize:11,color:"#475569",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:260}} title={svc.ociImage}>{svc.ociImage}</span>}
                 </div>
+                </>}
               </div>
             );
           })}
